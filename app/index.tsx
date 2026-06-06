@@ -1,28 +1,30 @@
-import { router, useRouter } from "expo-router";
-import React, { useState } from "react";
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Colors } from '../constants/Colors'; // Make sure the path to your Colors file is correct
 
-export default function Signin() {
-
+export default function signIn() {
 
     const router = useRouter();
-    const [mobileNumber, setMobileNumber] = useState("");
-    const [password, setPassword] = useState("");
+    const [mobile, setMobile] = useState("");
+    const [password, setPassworde] = useState("");
 
-    async function signInPresse() {
+    async function signInRequest() {
 
-        if (mobileNumber !== "" && password !== "") {
+        if (mobile !== "" && password !== "") {
 
             const loginData = {
-                mobile: mobileNumber,
+                mobile: mobile,
                 password: password
             };
 
             try {
                 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-                const response = await fetch(apiUrl+'/user/login', {
+                const response = await fetch(apiUrl+'/user/signIn', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(loginData)
@@ -55,61 +57,66 @@ export default function Signin() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.content}>
-                
-                {/* Logo Section */}
-                <View style={styles.logoContainer}>
-                    <Image 
+
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : "height"} 
+                style={styles.keyboardView}
+            >
+
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+                    <Image
                         source={require("../assets/images/logo.png")}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
-                </View>
-
-                {/* Header section */}
-                <View style={styles.header}>
-                    <Text style={styles.title}>Welcome</Text>
-                    <Text style={styles.subtitle}>Sign in to your account</Text>
-                </View>
-
-                {/* Input fields */}
-                <View style={styles.form}>
-                    <Text style={styles.label}>Mobile Number</Text>
-                    <TextInput 
-                        style={styles.input} 
-                        placeholder="Enter your mobile number"
-                        placeholderTextColor="#999"
-                        keyboardType="phone-pad" // Shows numeric keypad with phone symbols
-                        autoCapitalize="none"
-                        value={mobileNumber}
-                        onChangeText={setMobileNumber}
+                        style={styles.img}
                     />
 
-                    <Text style={styles.label}>Password</Text>
-                    <TextInput 
-                        style={styles.input} 
-                        placeholder="••••••••"
-                        placeholderTextColor="#999"
-                        secureTextEntry
-                        autoCapitalize="none"
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                </View>
+                    <View style={styles.textView}>
+                        <Text style={styles.titleTxt}>SignIn</Text>
+                        <Text style={styles.descriptionTxt}>Please Sign in to continue.</Text>
+                    </View>
 
-                {/* Action button */}
-                <TouchableOpacity style={styles.button} onPress={signInPresse}>
-                    <Text style={styles.buttonText}>Sign In</Text>
-                </TouchableOpacity>
+                    <View style={styles.inputView}>
+                        {/* Using Colors.light.secondary for icons to fit nicely in the input container */}
+                        <AntDesign name="user" size={20} color={Colors.light.secondary} style={styles.icon} />
+                        <TextInput 
+                            style={styles.input} 
+                            placeholder='Enter your Mobile' 
+                            placeholderTextColor={Colors.brand.denim} // Optional addition for readable placeholder text
+                            onChangeText={setMobile} 
+                            keyboardType="phone-pad"
+                        />
+                    </View>
 
-                {/* Footer link */}
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>Don't have an account? </Text>
-                    <TouchableOpacity onPress={() => router.push('/signUp')}>
-                        <Text style={styles.footerLink}>Sign Up</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+                    <View style={styles.inputView}>
+                        <MaterialIcons name="lock-outline" size={22} color={Colors.light.secondary} style={styles.icon} />
+                        <TextInput 
+                            style={styles.input} 
+                            placeholder='Enter your Password' 
+                            placeholderTextColor={Colors.brand.denim}
+                            onChangeText={setPassworde} 
+                            secureTextEntry={true}
+                        />
+                    </View>
+
+                    <Pressable style={styles.btn} onPress={() => {
+                        signInRequest();
+                    }}>
+                        <Text style={styles.btnTxt}>Sign In</Text>
+                    </Pressable>
+
+                    <View style={styles.footerRow}>
+                        <Text style={styles.footerTxt}>{"Don't have account?"}</Text>
+                        <Pressable style={{ height: 30 }} onPress={() => {
+                            router.push("/signup");
+                        }}>
+                            <Text style={styles.signUpTxt}>Sign Up</Text>
+                        </Pressable>
+                    </View>
+
+                </ScrollView>
+
+            </KeyboardAvoidingView>
+
         </SafeAreaView>
     );
 }
@@ -117,86 +124,83 @@ export default function Signin() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: Colors.light.background, // Used backgroundLight (#caf0f8)
     },
-    content: {
+    keyboardView: {
         flex: 1,
-        justifyContent: "center",
-        paddingHorizontal: 24,
     },
-    logoContainer: {
+    scrollContent: {
+        flexGrow: 1,
+        gap: 18,
         alignItems: "center",
-        marginBottom: 24,
+        justifyContent: "center",
+        paddingHorizontal: 20,
+        paddingBottom: 20,
     },
-    logo: {
+    descriptionTxt: {
+        color: Colors.light.secondary, // Uses denim to blend with light theme accents
+        marginTop: 5,
+    },
+    titleTxt: {
+        fontWeight: "bold",
+        fontSize: 22,
+        color: Colors.light.text, // Uses deepNavy (#003049)
+    },
+    textView: {
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    btnTxt: {
+        color: Colors.light.card, // Fallback to white (#ffffff)
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    btn: {
+        backgroundColor: Colors.light.primary, // Swapped blue with royalBlue (#0077b6)
+        borderRadius: 50,
+        padding: 14,
+        width: "100%",
+        alignItems: "center",
+        marginTop: 10,
+    },
+    inputView: {
+        width: "100%",
+        flexDirection: "row",
+        backgroundColor: Colors.light.card, // Replaced gray with pure white (#ffffff) to stand out against background light blue canvas
+        borderColor: Colors.light.border, // Replaced hardcoded color with paleBlue border
+        borderWidth: 1,
+        borderRadius: 50,
+        paddingHorizontal: 18,
+        alignItems: "center",
+        gap: 10,
+    },
+    icon: {
+        alignSelf: "center",
+    },
+    img: {
         width: 100,
         height: 100,
-        borderRadius: 20, // Optional: gives corners a smooth look
-    },
-    header: {
-        marginBottom: 32,
-        alignItems: "center", // Standard centered look to align with the logo
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: "700",
-        color: "#1A1A1A",
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: "#666666",
-    },
-    form: {
-        marginBottom: 24,
-    },
-    label: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#1A1A1A",
-        marginBottom: 8,
-        marginTop: 16,
+        resizeMode: "contain",
+        marginBottom: 10,
+        borderRadius: 25,
     },
     input: {
-        height: 50,
-        backgroundColor: "#F5F5F7",
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        fontSize: 16,
-        color: "#1A1A1A",
-        borderWidth: 1,
-        borderColor: "#E5E5EA",
+        flex: 1,
+        paddingVertical: 12,
+        fontSize: 15,
+        color: Colors.light.text, // Text entered inside the input fields will be deepNavy
     },
-    button: {
-        height: 52,
-        backgroundColor: "#007AFF",
-        borderRadius: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 16,
-        shadowColor: "#007AFF",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 3,
+    footerRow: {
+        flexDirection: "row", 
+        gap: 10, 
+        marginTop: 10,
     },
-    buttonText: {
-        color: "#FFFFFF",
-        fontSize: 16,
-        fontWeight: "600",
+    footerTxt: {
+        color: Colors.light.secondary,
     },
-    footer: {
-        flexDirection: "row",
-        justifyContent: "center",
-        marginTop: 32,
-    },
-    footerText: {
-        fontSize: 14,
-        color: "#666666",
-    },
-    footerLink: {
-        fontSize: 14,
-        color: "#007AFF",
-        fontWeight: "600",
-    },
+    signUpTxt: {
+        fontWeight: "bold", 
+        fontSize: 15,
+        color: Colors.light.primary, // Highlights 'Sign Up' with royalBlue primary theme color
+    }
 });
