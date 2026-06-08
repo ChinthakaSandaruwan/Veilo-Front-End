@@ -16,7 +16,7 @@ export const Colors = {
     denim: "#669bbc",           // Balanced denim blue. Perfect for secondary buttons, borders, or informational badges.
 
     // --- Soft Backgrounds & Accents ---
-    iceBlue: "#90e0ef",         // Ice cold blue tint. Useful for skeleton loaders, progress bars, or active switch tracks.
+    iceBlue: "#90e0ef",         // Very soft pastel blue tint. Suitable for subtle backgrounds and decorative elements.
     paleBlue: "#ade8f4",        // Very light blue hue. Ideal for text input borders, section dividers, and grid lines.
     backgroundLight: "#caf0f8", // Ultra-light blue. Designed to be the main canvas/screen background color for Light Mode.
 

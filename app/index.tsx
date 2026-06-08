@@ -2,7 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from '../constants/Colors'; // Make sure the path to your Colors file is correct
@@ -12,6 +12,26 @@ export default function signIn() {
     const router = useRouter();
     const [mobile, setMobile] = useState("");
     const [password, setPassworde] = useState("");
+
+    const [isloading, setIsLoading] = useState(false);
+
+     
+
+
+    useEffect(() => {
+        async function checkUser() {
+            const user = await AsyncStorage.getItem("user");
+            if (user) {
+                router.replace("/(tabs)/home");
+            }else{
+                setIsLoading(false);
+            }
+            
+        }
+        checkUser();
+    }, []);
+
+
 
     async function signInRequest() {
 
@@ -24,7 +44,7 @@ export default function signIn() {
 
             try {
                 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-                const response = await fetch(apiUrl+'/user/signIn', {
+                const response = await fetch(apiUrl + '/user/signIn', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(loginData)
@@ -35,9 +55,9 @@ export default function signIn() {
                     const data = await response.json();
                     console.log(data.user);
 
-                        await AsyncStorage.setItem("user", JSON.stringify(data.user) );
+                    await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
-                        router.replace("/home");
+                    router.replace("/home");
 
                 } else {
 
@@ -55,70 +75,72 @@ export default function signIn() {
 
     }
 
-    return (
-        <SafeAreaView style={styles.container}>
+    if (!isloading) {
+        return (
+            <SafeAreaView style={styles.container}>
 
-            <KeyboardAvoidingView 
-                behavior={Platform.OS === "ios" ? "padding" : "height"} 
-                style={styles.keyboardView}
-            >
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    style={styles.keyboardView}
+                >
 
-                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                    <Image
-                        source={require("../assets/images/logo.png")}
-                        style={styles.img}
-                    />
-
-                    <View style={styles.textView}>
-                        <Text style={styles.titleTxt}>SignIn</Text>
-                        <Text style={styles.descriptionTxt}>Please Sign in to continue.</Text>
-                    </View>
-
-                    <View style={styles.inputView}>
-                        {/* Using Colors.light.secondary for icons to fit nicely in the input container */}
-                        <AntDesign name="user" size={20} color={Colors.light.secondary} style={styles.icon} />
-                        <TextInput 
-                            style={styles.input} 
-                            placeholder='Enter your Mobile' 
-                            placeholderTextColor={Colors.brand.denim} // Optional addition for readable placeholder text
-                            onChangeText={setMobile} 
-                            keyboardType="phone-pad"
+                        <Image
+                            source={require("../assets/images/logo.png")}
+                            style={styles.img}
                         />
-                    </View>
 
-                    <View style={styles.inputView}>
-                        <MaterialIcons name="lock-outline" size={22} color={Colors.light.secondary} style={styles.icon} />
-                        <TextInput 
-                            style={styles.input} 
-                            placeholder='Enter your Password' 
-                            placeholderTextColor={Colors.brand.denim}
-                            onChangeText={setPassworde} 
-                            secureTextEntry={true}
-                        />
-                    </View>
+                        <View style={styles.textView}>
+                            <Text style={styles.titleTxt}>SignIn</Text>
+                            <Text style={styles.descriptionTxt}>Please Sign in to continue.</Text>
+                        </View>
 
-                    <Pressable style={styles.btn} onPress={() => {
-                        signInRequest();
-                    }}>
-                        <Text style={styles.btnTxt}>Sign In</Text>
-                    </Pressable>
+                        <View style={styles.inputView}>
+                            {/* Using Colors.light.secondary for icons to fit nicely in the input container */}
+                            <AntDesign name="user" size={20} color={Colors.light.secondary} style={styles.icon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder='Enter your Mobile'
+                                placeholderTextColor={Colors.brand.denim} // Optional addition for readable placeholder text
+                                onChangeText={setMobile}
+                                keyboardType="phone-pad"
+                            />
+                        </View>
 
-                    <View style={styles.footerRow}>
-                        <Text style={styles.footerTxt}>{"Don't have account?"}</Text>
-                        <Pressable style={{ height: 30 }} onPress={() => {
-                            router.push("/signup");
+                        <View style={styles.inputView}>
+                            <MaterialIcons name="lock-outline" size={22} color={Colors.light.secondary} style={styles.icon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder='Enter your Password'
+                                placeholderTextColor={Colors.brand.denim}
+                                onChangeText={setPassworde}
+                                secureTextEntry={true}
+                            />
+                        </View>
+
+                        <Pressable style={styles.btn} onPress={() => {
+                            signInRequest();
                         }}>
-                            <Text style={styles.signUpTxt}>Sign Up</Text>
+                            <Text style={styles.btnTxt}>Sign In</Text>
                         </Pressable>
-                    </View>
 
-                </ScrollView>
+                        <View style={styles.footerRow}>
+                            <Text style={styles.footerTxt}>{"Don't have account?"}</Text>
+                            <Pressable style={{ height: 30 }} onPress={() => {
+                                router.push("/signup");
+                            }}>
+                                <Text style={styles.signUpTxt}>Sign Up</Text>
+                            </Pressable>
+                        </View>
 
-            </KeyboardAvoidingView>
+                    </ScrollView>
 
-        </SafeAreaView>
-    );
+                </KeyboardAvoidingView>
+
+            </SafeAreaView>
+        );
+    }
 }
 
 const styles = StyleSheet.create({
@@ -191,15 +213,15 @@ const styles = StyleSheet.create({
         color: Colors.light.text, // Text entered inside the input fields will be deepNavy
     },
     footerRow: {
-        flexDirection: "row", 
-        gap: 10, 
+        flexDirection: "row",
+        gap: 10,
         marginTop: 10,
     },
     footerTxt: {
         color: Colors.light.secondary,
     },
     signUpTxt: {
-        fontWeight: "bold", 
+        fontWeight: "bold",
         fontSize: 15,
         color: Colors.light.primary, // Highlights 'Sign Up' with royalBlue primary theme color
     }
