@@ -1,26 +1,20 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, useColorScheme, Alert } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Colors, Fonts } from '../constants/theme';
-import Fontisto from '@expo/vector-icons/Fontisto';
 
-
-export default function Chat() {
+export default function GhostChatRoom() {
     const colorScheme = useColorScheme() ?? 'light';
     const currentColors = Colors[colorScheme];
     const systemFont = Fonts?.sans || 'System';
 
     const [chatHistory, setChatHistory] = useState<any[]>([]);
-    const [userName, setUserName] = useState("");
-
     const [loggedUser, setLoggedUser] = useState<any>();
-
     const [text, settext] = useState("");
 
     const webSocket = useRef<WebSocket>(null);
@@ -29,14 +23,8 @@ export default function Chat() {
 
     const params = useLocalSearchParams();
     const chatId = params.chatId;
-    const userMobile = params.userMobile;
-    const userImg = params.userImg as string;
-    const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-
 
     useEffect(() => {
-
-        setUserName(params.userName + "");
 
         loadChatHistory();
         connectWebSocket();
@@ -51,14 +39,12 @@ export default function Chat() {
 
         const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-        const response = await fetch(apiUrl + "/chat-history/get-chat-history?id=" + chatId);
+        const response = await fetch(apiUrl + "/ghost-chat-history/get-history?id=" + chatId);
 
         const data = await response.json();
 
         if (response.ok) {
-
             setChatHistory(data);
-
         } else {
             console.log(response.status + "  : " + data.msg);
             alert("Something went wrong");
@@ -99,7 +85,6 @@ export default function Chat() {
 
             if (webSocket.current) {
 
-
                 const data = {
                     type: "register",
                     data: userObj.mobile
@@ -107,11 +92,9 @@ export default function Chat() {
 
                 webSocket.current.send(JSON.stringify(data));
 
-
             }
 
         }
-
 
         webSocket.current.onmessage = (event) => {
 
@@ -123,57 +106,6 @@ export default function Chat() {
 
         }
 
-    }
-
-    function deleteChat() {
-        if (Platform.OS === 'web') {
-            const consent = confirm("Are you sure you want to delete this chat?");
-            if (consent) performDelete();
-        } else {
-            Alert.alert(
-                "Delete Chat",
-                "Are you sure you want to delete this chat?",
-                [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Delete", style: "destructive", onPress: performDelete }
-                ]
-            );
-        }
-    }
-
-    async function performDelete() {
-        try {
-            const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-            const response = await fetch(apiUrl + "/chat/delete", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chatId })
-            });
-
-            if (response.ok) {
-                if (Platform.OS === 'web') {
-                    alert("Chat deleted successfully");
-                } else {
-                    Alert.alert("Success", "Chat deleted successfully");
-                }
-                router.back();
-            } else {
-                const data = await response.json();
-                const msg = data.msg || "Unknown error";
-                if (Platform.OS === 'web') {
-                    alert("Error: " + msg);
-                } else {
-                    Alert.alert("Error", msg);
-                }
-            }
-        } catch (error) {
-            console.error("Delete chat error: ", error);
-            if (Platform.OS === 'web') {
-                alert("Something went wrong");
-            } else {
-                Alert.alert("Error", "Something went wrong");
-            }
-        }
     }
 
     return (
@@ -189,24 +121,16 @@ export default function Chat() {
                     <Entypo name="chevron-left" size={24} color={currentColors.text} onPress={() => {
                         router.back();
                     }} />
-                    <Image
-                       source={{ uri: (userImg && userImg !== "" && !userImg.endsWith("/undefined") && !userImg.endsWith("/null")) ? apiUrl + userImg : "https://img.icons8.com/ios-filled/50/user-male-circle.png" }}
-                                style={styles.profilePic}
-                    />
+                    <View style={[styles.ghostAvatar, { backgroundColor: colorScheme === 'dark' ? '#25282a' : '#f0f0f0' }]}>
+                        <MaterialCommunityIcons name="ghost-outline" size={28} color={colorScheme === 'dark' ? '#9BA1A6' : '#555'} />
+                    </View>
                     <View style={{ flex: 1, gap: 3 }}>
-                        <Text style={[styles.nameTxt, { color: currentColors.text, fontFamily: systemFont }]}>{userName}</Text>
+                        <Text style={[styles.nameTxt, { color: currentColors.text, fontFamily: systemFont }]}>Anonymous</Text>
                         <View style={styles.statusView}>
                             <View style={styles.statusBall} />
-                            <Text style={[styles.statusTxt, { color: currentColors.tabIconDefault, fontFamily: systemFont }]}>Online</Text>
+                            <Text style={[styles.statusTxt, { color: currentColors.tabIconDefault, fontFamily: systemFont }]}>Ghost Mode</Text>
                         </View>
                     </View>
-                 {/* Delete icon */}
-                 <MaterialCommunityIcons name="delete-circle-outline" size={30} color={currentColors.text}
-                    onPress={()=>{
-                        deleteChat();
-                    }}
-                 
-                 />
                 </View>
 
                 <View style={[styles.bodyView, { backgroundColor: colorScheme === 'dark' ? '#1c1e20' : '#eff3ff' }]}>
@@ -217,13 +141,13 @@ export default function Chat() {
 
                             return (
 
-                                <View style={[styles.messageView, { alignItems: userMobile === item.sender ? "flex-start" : "flex-end" }]}>
+                                <View style={[styles.messageView, { alignItems: loggedUser?.mobile === item.sender ? "flex-end" : "flex-start" }]}>
                                     <Text style={[
                                         styles.message,
-                                        userMobile === item.sender ? styles.receiveMsg : styles.sendMsg,
-                                        userMobile === item.sender 
-                                            ? { backgroundColor: colorScheme === 'dark' ? '#25282a' : '#ffffff', color: currentColors.text, fontFamily: systemFont }
-                                            : { backgroundColor: currentColors.tint, color: colorScheme === 'dark' ? '#151718' : 'white', fontFamily: systemFont }
+                                        loggedUser?.mobile === item.sender ? styles.sendMsg : styles.receiveMsg,
+                                        loggedUser?.mobile === item.sender
+                                            ? { backgroundColor: '#7c3aed', color: 'white', fontFamily: systemFont }
+                                            : { backgroundColor: colorScheme === 'dark' ? '#25282a' : '#ffffff', color: currentColors.text, fontFamily: systemFont }
                                     ]}>
                                         {item.message}
                                     </Text>
@@ -251,7 +175,7 @@ export default function Chat() {
                         value={text} 
                     />
 
-                    <Pressable style={[styles.sendBtn, { backgroundColor: currentColors.tint }]} onPress={() => {
+                    <Pressable style={[styles.sendBtn, { backgroundColor: colorScheme === 'dark' ? '#fff' : '#7c3aed' }]} onPress={() => {
 
                         if (webSocket.current) {
 
@@ -263,12 +187,9 @@ export default function Chat() {
 
                             setChatHistory(oldChat => [msg, ...oldChat]);
 
-                            console.log("receiver: " + userMobile);
-
                             const data = {
-                                type: "chat",
+                                type: "ghost_chat",
                                 data: text,
-                                receiver: userMobile,
                                 sender: loggedUser.mobile,
                                 chatId: chatId
                             };
@@ -280,7 +201,6 @@ export default function Chat() {
                         }
 
                     }}>
-                        
                         <MaterialCommunityIcons name="send" size={30} color={colorScheme === 'dark' ? '#151718' : 'white'} />
                     </Pressable>
 
@@ -308,10 +228,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         gap: 15
     },
-    profilePic: {
+    ghostAvatar: {
         width: 50,
         height: 50,
         borderRadius: 50,
+        backgroundColor: "#f0f0f0",
+        justifyContent: "center",
+        alignItems: "center",
     },
     nameTxt: {
         color: "black",
@@ -331,7 +254,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 50,
-        backgroundColor: "#64fd85"
+        backgroundColor: "#b47fff"
     },
 
     bodyView: {
@@ -359,7 +282,7 @@ const styles = StyleSheet.create({
     },
 
     sendMsg: {
-        backgroundColor: "#005eff",
+        backgroundColor: "#7c3aed",
         color: "white",
         borderTopRightRadius: 0,
     },
@@ -388,7 +311,7 @@ const styles = StyleSheet.create({
         paddingVertical: 15
     },
     sendBtn: {
-        backgroundColor: "#005eff",
+        backgroundColor: "#7c3aed",
         padding: 10,
         borderRadius: 50,
         width: 50,

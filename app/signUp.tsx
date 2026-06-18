@@ -2,35 +2,33 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Colors, Fonts } from '../constants/theme';
 
 export default function Signup() {
-
     const [fname, setFname] = useState("");
     const [lname, setLname] = useState("");
     const [mobile, setMobile] = useState("");
     const [password, setPassword] = useState("");
 
-
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const theme = Colors[colorScheme];
+    const systemFont = Fonts?.sans || 'normal';
 
     async function signupRequest() {
-
         if (fname !== "" && lname !== "" && mobile !== "" && password !== "") {
-
             const data = {
                 fname: fname,
                 lname: lname,
                 mobile: mobile,
                 password: password
-            }
+            };
 
             try {
-
                 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-
-                const response = await fetch( apiUrl+"/user/signup", {
+                const response = await fetch(apiUrl + "/user/signup", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data)
@@ -38,130 +36,157 @@ export default function Signup() {
 
                 const resData = await response.json();
                 alert(response.status + " : " + resData.msg);
-
             } catch (err) {
                 console.log(err);
             }
-
         }
-
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-
-            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
-
-                <ScrollView contentContainerStyle={{ flexGrow: 1, gap: 18, padding: 20, alignItems: "center" }}>
-
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.keyboardView}
+            >
+                <ScrollView 
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
                     <Image
-                        source={require("../assets/images/bg-signup.jpg")}
+                        source={require("../assets/images/icon.png")}
                         style={styles.img}
-
                     />
 
                     <View style={styles.textView}>
-                        <Text style={styles.titleTxt}>Register</Text>
-                        <Text style={styles.descriptionTxt}>Please register to login.</Text>
+                        <Text style={[styles.titleTxt, { color: theme.text, fontFamily: systemFont }]}>Register</Text>
+                        <Text style={[styles.descriptionTxt, { color: theme.icon, fontFamily: systemFont }]}>Please register to login.</Text>
                     </View>
 
-                    <View style={styles.inputView}>
-                        <AntDesign name="user-add" size={20} color="#696969" />
-                        <TextInput style={styles.input} placeholder='Enter your First Name' onChangeText={setFname} />
+                    <View style={[styles.inputView, { backgroundColor: colorScheme === 'dark' ? '#25282a' : '#ececec' }]}>
+                        <AntDesign name="user-add" size={20} color={theme.icon} style={styles.iconStyle} />
+                        <TextInput 
+                            style={[styles.input, { color: theme.text, fontFamily: systemFont }]} 
+                            placeholder='Enter your First Name' 
+                            placeholderTextColor={theme.icon}
+                            onChangeText={setFname} 
+                        />
                     </View>
 
-                    <View style={styles.inputView}>
-                        <AntDesign name="user-add" size={20} color="#696969" />
-                        <TextInput style={styles.input} placeholder='Enter your Last Name' onChangeText={setLname} />
+                    <View style={[styles.inputView, { backgroundColor: colorScheme === 'dark' ? '#25282a' : '#ececec' }]}>
+                        <AntDesign name="user-add" size={20} color={theme.icon} style={styles.iconStyle} />
+                        <TextInput 
+                            style={[styles.input, { color: theme.text, fontFamily: systemFont }]} 
+                            placeholder='Enter your Last Name' 
+                            placeholderTextColor={theme.icon}
+                            onChangeText={setLname} 
+                        />
                     </View>
 
-                    <View style={styles.inputView}>
-                        <AntDesign name="user-add" size={20} color="#696969" />
-                        <TextInput style={styles.input} placeholder='Enter your Mobile' onChangeText={setMobile} />
+                    <View style={[styles.inputView, { backgroundColor: colorScheme === 'dark' ? '#25282a' : '#ececec' }]}>
+                        <AntDesign name="user-add" size={20} color={theme.icon} style={styles.iconStyle} />
+                        <TextInput 
+                            style={[styles.input, { color: theme.text, fontFamily: systemFont }]} 
+                            placeholder='Enter your Mobile' 
+                            placeholderTextColor={theme.icon}
+                            keyboardType="phone-pad"
+                            onChangeText={setMobile} 
+                        />
                     </View>
 
-                    <View style={styles.inputView}>
-                        <MaterialIcons name="lock-outline" size={22} color="#696969" />
-                        <TextInput style={styles.input} placeholder='Enter your Password' onChangeText={setPassword} />
+                    <View style={[styles.inputView, { backgroundColor: colorScheme === 'dark' ? '#25282a' : '#ececec' }]}>
+                        <MaterialIcons name="lock-outline" size={22} color={theme.icon} style={styles.iconStyle} />
+                        <TextInput 
+                            style={[styles.input, { color: theme.text, fontFamily: systemFont }]} 
+                            placeholder='Enter your Password' 
+                            placeholderTextColor={theme.icon}
+                            secureTextEntry
+                            onChangeText={setPassword} 
+                        />
                     </View>
 
-                    <Pressable style={styles.btn} onPress={() => {
-                        signupRequest();
-                    }}>
-                        <Text style={styles.btnTxt}>Sign Up</Text>
+                    <Pressable style={[styles.btn, { backgroundColor: theme.tint }]} onPress={signupRequest}>
+                        <Text style={[styles.btnTxt, { fontFamily: systemFont, color: colorScheme === 'dark' ? '#151718' : 'white' }]}>Sign Up</Text>
                     </Pressable>
 
-                    <View style={{ flexDirection: "row", gap: 10 }}>
-                        <Text style={{ color: "#8b8b8b" }}>{"Don't have account?"}</Text>
-                        <Pressable style={{ height: 30 }} onPress={() => {
-                            router.back();
-                        }}>
-                            <Text style={{ fontWeight: "bold", fontSize: 15, }} >Sign In</Text>
+                    <View style={styles.footerRow}>
+                        <Text style={{ color: theme.icon, fontFamily: systemFont }}>{"Already have an account?"}</Text>
+                        <Pressable style={{ height: 30 }} onPress={() => router.back()}>
+                            <Text style={{ fontWeight: "bold", fontSize: 15, color: theme.tint, fontFamily: systemFont }} >Sign In</Text>
                         </Pressable>
                     </View>
 
                 </ScrollView>
-
             </KeyboardAvoidingView>
-
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-
+    container: {
+        flex: 1,
+    },
+    keyboardView: {
+        flex: 1,
+        width: '100%',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        gap: 16,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 24,
+        paddingVertical: 20,
+    },
     descriptionTxt: {
-        color: "#707070",
         marginTop: 5,
     },
-
     titleTxt: {
         fontWeight: "bold",
-        fontSize: 22,
+        fontSize: 24,
     },
-
     textView: {
         alignItems: "center",
-        marginBottom: 20,
+        marginBottom: 10,
     },
-
     btnTxt: {
         color: "white",
         fontSize: 16,
         fontWeight: "bold",
     },
     btn: {
-        backgroundColor: "#0066ff",
         borderRadius: 50,
-        padding: 10,
+        padding: 14,
         width: "100%",
         alignItems: "center",
+        marginTop: 5,
     },
     inputView: {
         width: "100%",
-        height: "auto",
         flexDirection: "row",
-        backgroundColor: "#ececec",
         borderRadius: 50,
         paddingHorizontal: 18,
-        paddingVertical: 8,
-        justifyContent: "center",
-        gap: 5,
-    },
-
-    container: {
-        flex: 1,
-        backgroundColor: "white",
+        paddingVertical: Platform.OS === 'ios' ? 12 : 4,
         alignItems: "center",
-        gap: 18,
+        gap: 10,
+    },
+    iconStyle: {
+        alignSelf: 'center',
     },
     img: {
-        width: "100%",
-        height: 250,
-
+        width: 110,
+        height: 110,
+        borderRadius: 25,
+        marginBottom: 10,
     },
     input: {
-        width: "90%",
-        padding: 5,
+        flex: 1,
+        paddingVertical: 8,
+        fontSize: 15,
     },
+    footerRow: {
+        flexDirection: "row", 
+        gap: 5, 
+        alignItems: "center", 
+        marginTop: 5
+    }
 });

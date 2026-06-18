@@ -1,30 +1,30 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Octicons from '@expo/vector-icons/Octicons';
+import Entypo from '@expo/vector-icons/Entypo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
-import { FlatList, Image, Pressable, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Colors, Fonts } from '../../constants/theme';
+import { Colors, Fonts } from '../constants/theme';
 
-export default function Home() {
+export default function GhostChat() {
+
     const [chatData, setChatData] = useState();
     const [isRefresh, setIsRefresh] = useState(false);
-    const [userName, setUserName] = useState("");
     const [userMobile, setUserMobile] = useState("");
-    const [searchMobile, setSearchMobile] = useState("");
+    const [newChatMobile, setNewChatMobile] = useState("");
 
     const router = useRouter();
     const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-    // Detect system theme (light or dark)
     const colorScheme = useColorScheme() ?? 'light';
     const currentColors = Colors[colorScheme];
 
     async function loadChats(mobile: string) {
         setIsRefresh(true);
         try {
-            const response = await fetch(apiUrl + "/chat/get-chats?mobile=" + mobile);
+            const response = await fetch(apiUrl + "/ghost-chat/get-chats?mobile=" + mobile);
             const data = await response.json();
             setIsRefresh(false);
 
@@ -43,9 +43,34 @@ export default function Home() {
         const userString = await AsyncStorage.getItem("user");
         if (userString) {
             const userObj = JSON.parse(userString);
-            setUserName(userObj.fname);
             setUserMobile(userObj.mobile);
             loadChats(userObj.mobile);
+        }
+    }
+
+    async function startGhostChat() {
+        if (newChatMobile === "") return;
+
+        try {
+            const response = await fetch(apiUrl + "/ghost-chat/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_1: userMobile, user_2: newChatMobile })
+            });
+
+            const data = await response.json();
+
+            if (response.ok || response.status === 200) {
+                setNewChatMobile("");
+                router.push({
+                    pathname: "/ghost_chat_room",
+                    params: { chatId: data.chat_id }
+                });
+            } else {
+                alert(data.msg);
+            }
+        } catch (err) {
+            console.log(err);
         }
     }
 
@@ -64,37 +89,6 @@ export default function Home() {
         return formattedTime;
     }
 
-    async function searchNewUser() {
-        if (searchMobile === "") return;
-
-        try {
-            const response = await fetch(apiUrl + "/chat/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_1: userMobile, user_2: searchMobile })
-            });
-
-            const data = await response.json();
-
-            if (response.ok || response.status === 200) {
-                setSearchMobile("");
-                router.push({
-                    pathname: "/chat",
-                    params: {
-                        chatId: data.chat_id,
-                        userName: searchMobile,
-                        userMobile: searchMobile
-                    }
-                });
-            } else {
-                alert(data.msg);
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    // Dynamic styles based on theme selection
     const dynamicStyles = {
         container: {
             backgroundColor: currentColors.background,
@@ -103,7 +97,7 @@ export default function Home() {
             color: currentColors.text,
             fontFamily: Fonts.sans,
         },
-        searchView: {
+        inputView: {
             backgroundColor: colorScheme === 'dark' ? '#242729' : '#f3f3f3',
         },
         searchInput: {
@@ -117,70 +111,46 @@ export default function Home() {
         <SafeAreaView style={[styles.container, dynamicStyles.container]}>
 
             <View style={styles.headerView}>
-                <Text style={[{ fontSize: 18 }, dynamicStyles.text]}>{userName}</Text>
-
-                  {/* ghost icon  */}
-            <MaterialCommunityIcons  name="ghost-outline" size={24} color={currentColors.text} 
-            
-            onPress={() =>
-
-                router.push("/ghost_chat")
-            }
-            
-            />
+                <Pressable onPress={() => router.back()}>
+                    <Entypo name="chevron-left" size={24} color={currentColors.text} />
+                </Pressable>
+                <MaterialCommunityIcons name="ghost-outline" size={22} color={currentColors.text} />
+                <Text style={[styles.headerTitle, dynamicStyles.text]}>Ghost Chat</Text>
             </View>
 
-
-          
-
-
-            <View style={[styles.searchView, dynamicStyles.searchView]}>
-              
+            <View style={[styles.inputView, dynamicStyles.inputView]}>
+                <Octicons name="search" size={20} color={currentColors.icon} />
                 <TextInput
-                    placeholder='Search by mobile'
+                    placeholder='Enter mobile to start ghost chat'
                     placeholderTextColor={currentColors.tabIconDefault}
-                    autoFocus={false}
                     style={dynamicStyles.searchInput}
-                    value={searchMobile}
-                    onChangeText={setSearchMobile}
+                    value={newChatMobile}
+                    onChangeText={setNewChatMobile}
                     keyboardType="phone-pad"
                 />
-
-                  <Octicons name="search" size={20} color={currentColors.icon} 
-                onPress={searchNewUser}
-                
-                />
-                
+                <Pressable onPress={startGhostChat}>
+                    <MaterialCommunityIcons name="ghost" size={22} color={currentColors.tint} />
+                </Pressable>
             </View>
-           
-          
 
             <FlatList
                 data={chatData}
                 keyExtractor={(item, index) => item.chat_id?.toString() || index.toString()}
                 renderItem={({ item }) => {
-                    const userImg = item.user?.profile_picture || item.user?.img;
                     const lastMsg = item.last_message;
-                    const isValidImg = userImg && userImg !== "" && !userImg.endsWith("/undefined") && !userImg.endsWith("/null");
                     return (
                         <Pressable style={styles.chatView} onPress={() => {
                             router.push({
-                                pathname: "/chat",
-                                params: {
-                                    chatId: item.chat_id || lastMsg?.chat_chat_id,
-                                    userName: item.user?.fname + " " + item.user?.lname,
-                                    userMobile: item.user?.mobile,
-                                    userImg: isValidImg ? userImg : ""
-                                }
+                                pathname: "/ghost_chat_room",
+                                params: { chatId: item.chat_id }
                             });
                         }}>
-                            <Image
-                                source={{ uri: isValidImg ? apiUrl + userImg : "https://img.icons8.com/ios-filled/50/user-male-circle.png" }}
-                                style={styles.profilePic}
-                            />
+                            <View style={styles.ghostIcon}>
+                                <MaterialCommunityIcons name="ghost-outline" size={30} color={currentColors.tabIconDefault} />
+                            </View>
                             <View style={{ gap: 3, flex: 1 }}>
                                 <Text style={[styles.nameTxt, { color: currentColors.text, fontFamily: Fonts.sans }]}>
-                                    {item.user?.fname + " " + item.user?.lname}
+                                    Anonymous
                                 </Text>
                                 <Text numberOfLines={1} style={[styles.msgTxt, { color: currentColors.tabIconDefault, fontFamily: Fonts.sans }]}>
                                     {lastMsg ? lastMsg.message : "No Messages Yet"}
@@ -202,6 +172,7 @@ export default function Home() {
 
         </SafeAreaView>
     );
+
 }
 
 const styles = StyleSheet.create({
@@ -213,10 +184,15 @@ const styles = StyleSheet.create({
     },
     headerView: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        alignItems: "center",
         paddingVertical: 10,
+        gap: 10,
     },
-    searchView: {
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: "600",
+    },
+    inputView: {
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 15,
@@ -224,10 +200,13 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         gap: 10,
     },
-    profilePic: {
+    ghostIcon: {
         width: 60,
         height: 60,
         borderRadius: 50,
+        backgroundColor: "#f0f0f0",
+        justifyContent: "center",
+        alignItems: "center",
     },
     chatView: {
         flexDirection: "row",

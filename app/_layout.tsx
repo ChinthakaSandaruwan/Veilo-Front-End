@@ -9,6 +9,8 @@ export default function RootLayout(){
             <Stack.Screen name="signup"/>
             <Stack.Screen name="(tabs)"/>
             <Stack.Screen name="chat"/>
+            <Stack.Screen name="ghost_chat"/>
+            <Stack.Screen name="ghost_chat_room"/>
         </Stack>
 
     );

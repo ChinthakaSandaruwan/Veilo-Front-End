@@ -2,11 +2,23 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from "expo-router";
+import { useColorScheme } from 'react-native';
+import { Colors } from '../../constants/theme';
 
 export default function TabLayout() {
+    const colorScheme = useColorScheme() ?? 'light';
+    const currentColors = Colors[colorScheme];
 
     return (
-        <Tabs screenOptions={{ headerShown: false }}>
+        <Tabs screenOptions={{ 
+            headerShown: false,
+            tabBarActiveTintColor: currentColors.tabIconSelected,
+            tabBarInactiveTintColor: currentColors.tabIconDefault,
+            tabBarStyle: {
+                backgroundColor: currentColors.background,
+                borderTopColor: colorScheme === 'dark' ? '#2c2e30' : '#e5e5e5',
+            }
+        }}>
 
             <Tabs.Screen name="home" options={{
                 tabBarLabel: "Home",
@@ -34,6 +46,8 @@ export default function TabLayout() {
                     );
                 }
             }} />
+
+            
 
         </Tabs>
     );
