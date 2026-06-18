@@ -1,236 +1,167 @@
-import AntDesign from "@expo/vector-icons/AntDesign";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Colors } from "../constants/Colors"; // Ensure the path to your Colors file is correct
 
-export default function signUp() {
+export default function Signup() {
 
-  const [fname, setFname] = useState("");
-  const [lname, setLname] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [password, setPassword] = useState("");
+    const [fname, setFname] = useState("");
+    const [lname, setLname] = useState("");
+    const [mobile, setMobile] = useState("");
+    const [password, setPassword] = useState("");
 
-  const router = useRouter();
 
-  async function signupRequest() {
+    const router = useRouter();
 
-    if(fname!="" && lname!="" && mobile!="" && password!=""){
+    async function signupRequest() {
 
-      const data = {
-        fname: fname,
-        lname: lname,
-        mobile: mobile,
-        password: password,
-      };
+        if (fname !== "" && lname !== "" && mobile !== "" && password !== "") {
 
-      try {
-        const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-        const response = await fetch(apiUrl+'/user/signUp', {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
+            const data = {
+                fname: fname,
+                lname: lname,
+                mobile: mobile,
+                password: password
+            }
 
-        if (response.ok) {
-          const resData = await response.json();
-          alert(response.status + " " + resData.msg);
-          router.back();
-          
-        } else {
-          const resData = await response.json();
-          alert(response.status + " " + resData.msg);
+            try {
+
+                const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
+                const response = await fetch( apiUrl+"/user/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                const resData = await response.json();
+                alert(response.status + " : " + resData.msg);
+
+            } catch (err) {
+                console.log(err);
+            }
+
         }
 
-      } catch (error) {
-        console.log(error);
-      }
-
-    } else {
-      alert("Please fill all the fields");
     }
-  }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <Image
-            source={require("../assets/images/logo.png")}
-            style={styles.img}
-          />
+    return (
+        <SafeAreaView style={styles.container}>
 
-          <View style={styles.textView}>
-            <Text style={styles.titleTxt}>Register</Text>
-            <Text style={styles.descriptionTxt}>Please register to login.</Text>
-          </View>
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
 
-          <View style={styles.inputView}>
-            <AntDesign name="user" size={20} color={Colors.light.secondary} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your First Name"
-              placeholderTextColor={Colors.brand.denim}
-              onChangeText={setFname}
-            />
-          </View>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, gap: 18, padding: 20, alignItems: "center" }}>
 
-          <View style={styles.inputView}>
-            <AntDesign name="user" size={20} color={Colors.light.secondary} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your Last Name"
-              placeholderTextColor={Colors.brand.denim}
-              onChangeText={setLname}
-            />
-          </View>
+                    <Image
+                        source={require("../assets/images/bg-signup.jpg")}
+                        style={styles.img}
 
-          <View style={styles.inputView}>
-            <AntDesign name="phone" size={20} color={Colors.light.secondary} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your Mobile"
-              placeholderTextColor={Colors.brand.denim}
-              onChangeText={setMobile}
-              keyboardType="phone-pad"
-            />
-          </View>
+                    />
 
-          <View style={styles.inputView}>
-            <MaterialIcons name="lock-outline" size={22} color={Colors.light.secondary} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your Password"
-              placeholderTextColor={Colors.brand.denim}
-              onChangeText={setPassword}
-              secureTextEntry={true}
-            />
-          </View>
+                    <View style={styles.textView}>
+                        <Text style={styles.titleTxt}>Register</Text>
+                        <Text style={styles.descriptionTxt}>Please register to login.</Text>
+                    </View>
 
-          <Pressable
-            style={styles.btn}
-            onPress={() => {
-              signupRequest();
-            }}
-          >
-            <Text style={styles.btnTxt}>Sign Up</Text>
-          </Pressable>
+                    <View style={styles.inputView}>
+                        <AntDesign name="user-add" size={20} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your First Name' onChangeText={setFname} />
+                    </View>
 
-          <View style={styles.footerRow}>
-            <Text style={styles.footerTxt}>Already have an account?</Text>
-            <Pressable
-              style={{ height: 30 }}
-              onPress={() => {
-                router.back();
-              }}
-            >
-              <Text style={styles.signInTxt}>Sign In</Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+                    <View style={styles.inputView}>
+                        <AntDesign name="user-add" size={20} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your Last Name' onChangeText={setLname} />
+                    </View>
+
+                    <View style={styles.inputView}>
+                        <AntDesign name="user-add" size={20} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your Mobile' onChangeText={setMobile} />
+                    </View>
+
+                    <View style={styles.inputView}>
+                        <MaterialIcons name="lock-outline" size={22} color="#696969" />
+                        <TextInput style={styles.input} placeholder='Enter your Password' onChangeText={setPassword} />
+                    </View>
+
+                    <Pressable style={styles.btn} onPress={() => {
+                        signupRequest();
+                    }}>
+                        <Text style={styles.btnTxt}>Sign Up</Text>
+                    </Pressable>
+
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                        <Text style={{ color: "#8b8b8b" }}>{"Don't have account?"}</Text>
+                        <Pressable style={{ height: 30 }} onPress={() => {
+                            router.back();
+                        }}>
+                            <Text style={{ fontWeight: "bold", fontSize: 15, }} >Sign In</Text>
+                        </Pressable>
+                    </View>
+
+                </ScrollView>
+
+            </KeyboardAvoidingView>
+
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background, // Canvas background light blue tone (#caf0f8)
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    gap: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  descriptionTxt: {
-    color: Colors.light.secondary, // Denim tint for readable, secondary text mapping
-    marginTop: 5,
-  },
-  titleTxt: {
-    fontWeight: "bold",
-    fontSize: 22,
-    color: Colors.light.text, // Deep Navy (#003049)
-  },
-  textView: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  btnTxt: {
-    color: Colors.light.card, // Fallback to white (#ffffff)
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  btn: {
-    backgroundColor: Colors.light.primary, // Brand primary royal blue (#0077b6)
-    borderRadius: 50,
-    padding: 14,
-    width: "100%",
-    alignItems: "center",
-    marginTop: 10,
-  },
-  inputView: {
-    width: "100%",
-    flexDirection: "row",
-    backgroundColor: Colors.light.card, // Card surface color pure white (#ffffff)
-    borderColor: Colors.light.border, // Pale blue border accentuation
-    borderWidth: 1,
-    borderRadius: 50,
-    paddingHorizontal: 18,
-    alignItems: "center",
-    gap: 10,
-  },
-  icon: {
-    alignSelf: "center",
-  },
-  img: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
-    marginBottom: 10,
-    borderRadius: 25,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: Colors.light.text, // User-typed text displays in deep navy
-  },
-  footerRow: {
-    flexDirection: "row", 
-    gap: 10, 
-    marginTop: 10,
-  },
-  footerTxt: {
-    color: Colors.light.secondary,
-  },
-  signInTxt: {
-    fontWeight: "bold", 
-    fontSize: 15,
-    color: Colors.light.primary, // Formatted the 'Sign In' fallback text highlight link color
-  }
+
+    descriptionTxt: {
+        color: "#707070",
+        marginTop: 5,
+    },
+
+    titleTxt: {
+        fontWeight: "bold",
+        fontSize: 22,
+    },
+
+    textView: {
+        alignItems: "center",
+        marginBottom: 20,
+    },
+
+    btnTxt: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    btn: {
+        backgroundColor: "#0066ff",
+        borderRadius: 50,
+        padding: 10,
+        width: "100%",
+        alignItems: "center",
+    },
+    inputView: {
+        width: "100%",
+        height: "auto",
+        flexDirection: "row",
+        backgroundColor: "#ececec",
+        borderRadius: 50,
+        paddingHorizontal: 18,
+        paddingVertical: 8,
+        justifyContent: "center",
+        gap: 5,
+    },
+
+    container: {
+        flex: 1,
+        backgroundColor: "white",
+        alignItems: "center",
+        gap: 18,
+    },
+    img: {
+        width: "100%",
+        height: 250,
+
+    },
+    input: {
+        width: "90%",
+        padding: 5,
+    },
 });
